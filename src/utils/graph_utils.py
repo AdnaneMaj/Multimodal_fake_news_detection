@@ -1,4 +1,3 @@
-import numpy as np
 import networkx as nx
 import re
 from collections import Counter
