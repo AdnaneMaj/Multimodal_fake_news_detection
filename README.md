@@ -12,3 +12,22 @@
     - [ ] Word extractor from image using YOLO
     - [ ] Knowledge distilator ( using knowledge graph )
 - [ ] First tests
+
+---
+
+## Setup installation
+
+Create the conda environment :
+```bash
+$ conda env create --file environment.yml
+```
+
+Activate the conda env :
+```bash
+$ conda activate GNN_project
+```
+
+Update the conda environment :
+```bash
+$ conda env update --file environment.yml
+```

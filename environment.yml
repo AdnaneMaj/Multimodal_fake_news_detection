@@ -1,0 +1,11 @@
+name: GNN_project
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.9
+  - numpy
+  - networkx
+  - ipykernel
+  - matplotlib
+  - pandas
