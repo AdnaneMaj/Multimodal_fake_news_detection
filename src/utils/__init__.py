@@ -1,2 +1,2 @@
-from .data_utils import get_dataframe
+from .data_utils import DatasetCreator
 from .graph_utils import PMIGraphConstructor
