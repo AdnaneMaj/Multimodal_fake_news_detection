@@ -1,10 +1,11 @@
 import os
 import json
 import csv
+import pandas as pd
 
 
 class DatasetCreator:
-    def __init__(self, parent_dir, output_csv_path):
+    def __init__(self, parent_dir:str="./data/raw/PHEME", output_csv_path:str="./data/processed/data.csv"):
         """
         Initialize the DatasetCreator.
 
@@ -12,7 +13,7 @@ class DatasetCreator:
             parent_dir (str): Path to the parent directory containing all subjects.
             output_csv_path (str): Path to save the output CSV file.
         """
-        self.parent_dir = os.path.join(parent_dir)
+        self.parent_dir = os.path.join(parent_dir,'all-rnr-annotated-threads')
         self.output_csv_path = output_csv_path
         self.class_labels = {"rumours": 0, "non-rumours": 1}
         self.dataset = []
@@ -90,14 +91,10 @@ class DatasetCreator:
 
         print(f"Dataset saved to {self.output_csv_path}")
 
-
-# # Usage Example
-# if __name__ == "__main__":
-#     parent_directory = "/home/anas-nouri/OrganizeData/directory/all-rnr-annotated-threads"  # Replace with your directory path
-#     output_csv = "AllDataset1.csv"  # Replace with your desired output CSV path
-
-#     dataset_creator = DatasetCreator(parent_directory, output_csv)
-
-#     # Process the directories and save the CSV
-#     dataset_creator.process_directories()
-#     dataset_creator.save_to_csv()
+    def get_dataframe(self):
+        """
+        Get the dataset as a pandas dataframe
+        """
+        df = pd.read_csv(self.output_csv_path)
+        self.df = df
+        return df

@@ -4,7 +4,7 @@ from collections import Counter
 import math
 from typing import List
 
-class PMIGraphConstructor:
+class GraphConstructor:
     def __init__(self, window_size:int=5,padding:bool=True):
         """
         Initialize PMI Graph Constructor
