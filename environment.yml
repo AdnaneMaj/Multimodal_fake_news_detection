@@ -2,6 +2,7 @@ name: GNN_project
 channels:
   - defaults
   - conda-forge
+  - pyg
 dependencies:
   - python=3.9
   - numpy
@@ -9,3 +10,7 @@ dependencies:
   - ipykernel
   - matplotlib
   - pandas
+  - gensim
+  - transformers
+  - pyg
+  - python-magic
