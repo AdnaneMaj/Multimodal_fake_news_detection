@@ -161,7 +161,9 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-
-
-
 CODEOWNERS
+data/raw/PHEME/
+data/processed/data.csv
+data/processed/data_exemple.csv
+*.bin
+*.pt

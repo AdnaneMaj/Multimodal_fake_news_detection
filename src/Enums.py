@@ -2,4 +2,5 @@ from enum import Enum
 
 class BaseEnum(Enum):
 
-    CSV_DATA_PATH = "data/processed/data.csv"
+    DATA_PATH = "./data/"
+    WORD2VEC_MODEL = "../src/models/GoogleNews-vectors-negative300.bin"

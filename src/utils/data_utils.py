@@ -1,10 +1,12 @@
 import os
 import json
 import csv
-
+import pandas as pd
+from typing import Union, List
+from ..Enums import BaseEnum
 
 class DatasetCreator:
-    def __init__(self, parent_dir, output_csv_path):
+    def __init__(self, data_dir:str=BaseEnum.DATA_PATH.value,test:bool=True):
         """
         Initialize the DatasetCreator.
 
@@ -12,10 +14,18 @@ class DatasetCreator:
             parent_dir (str): Path to the parent directory containing all subjects.
             output_csv_path (str): Path to save the output CSV file.
         """
-        self.parent_dir = os.path.join(parent_dir)
-        self.output_csv_path = output_csv_path
+        self.parent_dir = os.path.join(data_dir,'raw/PHEME/all-rnr-annotated-threads')
+        self.output_csv_path = os.path.join(data_dir,'processed/data_exemple.csv') if test else os.path.join(data_dir,'processed/data.csv')
         self.class_labels = {"rumours": 0, "non-rumours": 1}
         self.dataset = []
+        self.df = None
+        
+        #Try to get the dataframe if it's already exist
+        if not os.path.exists(self.output_csv_path):
+            self.process_directories()
+            self.save_to_csv()
+        self.df = self.get_dataframe()
+
 
     def process_directories(self):
         """
@@ -90,14 +100,25 @@ class DatasetCreator:
 
         print(f"Dataset saved to {self.output_csv_path}")
 
+    #________________________
 
-# # Usage Example
-# if __name__ == "__main__":
-#     parent_directory = "/home/anas-nouri/OrganizeData/directory/all-rnr-annotated-threads"  # Replace with your directory path
-#     output_csv = "AllDataset1.csv"  # Replace with your desired output CSV path
+    def get_dataframe(self):
+        """
+        Get the dataset as a pandas dataframe
+        """
+        df = pd.read_csv(self.output_csv_path)
+        return df
+    
+    def get_attributes_by_id(self, id:int, attributes:Union[str,List[str]]):
+        """
+        Get values of some attributes from the dataframe
 
-#     dataset_creator = DatasetCreator(parent_directory, output_csv)
+        :return :A tuple of desired values
+        """
+        #Check if attributes is a list or one str, and make it a list if it's a str
+        if isinstance(attributes,str):
+            attributes = [attributes]
 
-#     # Process the directories and save the CSV
-#     dataset_creator.process_directories()
-#     dataset_creator.save_to_csv()
+        values = self.df[self.df.id_post == id][attributes].values[0] #This will return a single value if isinstance(attributes,str) true else a tuple
+
+        return values[0] if len(attributes) == 1 else tuple(values)
