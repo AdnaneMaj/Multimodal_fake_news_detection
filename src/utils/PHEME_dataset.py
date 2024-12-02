@@ -12,7 +12,8 @@ class PHEMEDataset(Dataset):
         root: str="data",
         transform: Optional[Callable] = None,
         pre_transform: Optional[Callable] = None,
-        pre_filter: Optional[Callable] = None
+        pre_filter: Optional[Callable] = None,
+        test:bool=True
     ):
         """
         Initialize the PHEME dataset.
@@ -23,7 +24,7 @@ class PHEMEDataset(Dataset):
             pre_transform (callable, optional): A function/transform to be applied before saving
             pre_filter (callable, optional): A function that takes in a Data object and returns True if the object should be included
         """
-        self.graph_constructor = GraphConstructor()
+        self.graph_constructor = GraphConstructor(test=test)
         self.data_list = None
         super().__init__(root, transform, pre_transform, pre_filter)
 
@@ -33,7 +34,7 @@ class PHEMEDataset(Dataset):
 
     @property
     def processed_file_names(self):
-        return ["graphs/graphs.pt"]
+        return ["graphs.pt"]
 
     def download(self):
         pass
