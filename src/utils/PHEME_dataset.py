@@ -12,7 +12,11 @@ class PHEMEDataset(Dataset):
         root: str="data",
         transform: Optional[Callable] = None,
         pre_transform: Optional[Callable] = None,
-        pre_filter: Optional[Callable] = None
+        pre_filter: Optional[Callable] = None,
+        window_size: int = 20,
+        padding: bool = True,
+        embedding: int = 'bert',
+        test:bool=True
     ):
         """
         Initialize the PHEME dataset.
@@ -23,7 +27,7 @@ class PHEMEDataset(Dataset):
             pre_transform (callable, optional): A function/transform to be applied before saving
             pre_filter (callable, optional): A function that takes in a Data object and returns True if the object should be included
         """
-        self.graph_constructor = GraphConstructor()
+        self.graph_constructor = GraphConstructor(window_size=window_size,padding=padding,embedding=embedding,test=test)
         self.data_list = None
         super().__init__(root, transform, pre_transform, pre_filter)
 
@@ -33,7 +37,7 @@ class PHEMEDataset(Dataset):
 
     @property
     def processed_file_names(self):
-        return ["graphs/graphs.pt"]
+        return ["graphs.pt"]
 
     def download(self):
         pass
@@ -49,14 +53,18 @@ class PHEMEDataset(Dataset):
         #Save the data list
         torch.save(data_list, self.processed_paths[0])
 
-    def len(self) -> int:
-        return len(self.graph_constructor.data.df)
-
-    def get(self, idx: int) -> Data:
+    def load(self):
         if not self.data_list:
             data_path = self.processed_paths[0]
             if not os.path.exists(data_path):
                 raise ValueError("Processed data not found. Run process() first.")
             self.data_list = torch.load(data_path)
+
+    def len(self) -> int:
+        self.load()
+        return len(self.data_list)
+
+    def get(self, idx: int) -> Data:
+        self.load()
         return self.data_list[idx]
     

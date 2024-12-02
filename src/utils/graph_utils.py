@@ -18,7 +18,7 @@ ___TO-DO___
 """
 
 class GraphConstructor:
-    def __init__(self, window_size:int=5,padding:bool=True,embedding:str='bert'):
+    def __init__(self, window_size:int=5,padding:bool=True,embedding:str='bert',test:bool=True):
         """
         Initialize PMI Graph Constructor
         
@@ -36,7 +36,7 @@ class GraphConstructor:
         self.embedde = self.create_embedde_func()
 
         #Create a DatasetCreator
-        self.data = DatasetCreator()
+        self.data = DatasetCreator(test=test)
 
     def create_embedde_func(self):
         """
@@ -153,8 +153,11 @@ class GraphConstructor:
         """
         Create a list of graph
         """
-        graphs = [self.construct_graph(row) for _,row in tqdm(self.data.df.iterrows(),desc='Constructing nx graphs :')]
-
+        graphs = []
+        for _,row in tqdm(self.data.df.iterrows(),desc='Constructing nx graphs :'):
+            graph = self.construct_graph(row)
+            if graph.number_of_edges() > 0:
+                graphs.append(graph)
         return graphs
     
     def nx_to_pyg(self,graph:nx.Graph):
