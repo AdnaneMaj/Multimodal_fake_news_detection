@@ -13,6 +13,9 @@ class PHEMEDataset(Dataset):
         transform: Optional[Callable] = None,
         pre_transform: Optional[Callable] = None,
         pre_filter: Optional[Callable] = None,
+        window_size: int = 20,
+        padding: bool = True,
+        embedding: int = 'bert',
         test:bool=True
     ):
         """
@@ -24,7 +27,7 @@ class PHEMEDataset(Dataset):
             pre_transform (callable, optional): A function/transform to be applied before saving
             pre_filter (callable, optional): A function that takes in a Data object and returns True if the object should be included
         """
-        self.graph_constructor = GraphConstructor(test=test)
+        self.graph_constructor = GraphConstructor(window_size=window_size,padding=padding,embedding=embedding,test=test)
         self.data_list = None
         super().__init__(root, transform, pre_transform, pre_filter)
 
