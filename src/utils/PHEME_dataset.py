@@ -53,14 +53,18 @@ class PHEMEDataset(Dataset):
         #Save the data list
         torch.save(data_list, self.processed_paths[0])
 
-    def len(self) -> int:
-        return len(self.graph_constructor.data.df)
-
-    def get(self, idx: int) -> Data:
+    def load(self):
         if not self.data_list:
             data_path = self.processed_paths[0]
             if not os.path.exists(data_path):
                 raise ValueError("Processed data not found. Run process() first.")
             self.data_list = torch.load(data_path)
+
+    def len(self) -> int:
+        self.load()
+        return len(self.data_list)
+
+    def get(self, idx: int) -> Data:
+        self.load()
         return self.data_list[idx]
     

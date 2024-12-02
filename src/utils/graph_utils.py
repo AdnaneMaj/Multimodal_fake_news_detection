@@ -153,8 +153,11 @@ class GraphConstructor:
         """
         Create a list of graph
         """
-        graphs = [self.construct_graph(row) for _,row in tqdm(self.data.df.iterrows(),desc='Constructing nx graphs :')]
-
+        graphs = []
+        for _,row in tqdm(self.data.df.iterrows(),desc='Constructing nx graphs :'):
+            graph = self.construct_graph(row)
+            if graph.number_of_edges() > 0:
+                graphs.append(graph)
         return graphs
     
     def nx_to_pyg(self,graph:nx.Graph):
