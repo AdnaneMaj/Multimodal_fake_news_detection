@@ -29,6 +29,7 @@ class PHEMEDataset(Dataset):
         """
         self.graph_constructor = GraphConstructor(window_size=window_size,padding=padding,embedding=embedding,test=test)
         self.data_list = None
+        self.embedding = embedding
         super().__init__(root, transform, pre_transform, pre_filter)
 
     @property
@@ -37,7 +38,8 @@ class PHEMEDataset(Dataset):
 
     @property
     def processed_file_names(self):
-        return ["graphs.pt"]
+        output_file = 'graphs.pt' if self.embedding == 'bert' else 'graphs_w2v.pt'
+        return [output_file]
 
     def download(self):
         pass
