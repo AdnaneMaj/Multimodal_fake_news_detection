@@ -37,7 +37,7 @@ Place the dataset folder after extraction inside [data/raw/](data/raw/) director
 - [x] Create Script to convert an event to csv file
 - [x] Start coding the different part
     - [x] Graph constructure (textual first)
-    - [ ] Word extractor from image using YOLO
+    - [x] Word extractor from image using YOLO
     - [ ] Knowledge distilator ( using knowledge graph )
 - [ ] First tests
 
