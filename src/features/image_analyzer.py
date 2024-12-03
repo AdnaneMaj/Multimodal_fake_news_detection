@@ -13,7 +13,7 @@ class ImageAnalyzer:
     """
 
     def __init__(self, 
-                 model_path: str = "yolo11n.pt", 
+                 model_path: str = "models/yolo/yolo11n.pt", 
                  confidence_threshold: float = 0.25, 
                  language: str = "eng"):
         """

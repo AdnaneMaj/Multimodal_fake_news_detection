@@ -50,3 +50,17 @@ Place the dataset folder after extraction inside [data/raw/](data/raw/) director
     - Here we will have a chauvauchment since the words comming from yolo are not in the context, so why don't use here prompt engineering to incorporate them ( for example : new_text = text + ", this post was accompagend with and image containing the follwing object : "+objects_detected_with_yolo )
 
 - Use a Graph data base to store the data : https://chatgpt.com/share/674c25eb-6df4-800d-89d4-fa5c3c3cb495
+
+## Setting Up the YOLO Model
+
+The YOLO model file (`yolo11.pt`) is required for object detection. It should be placed in the `models/yolo/` directory.
+
+### Step 1: Download the Model
+
+You can manually download the `yolo11.pt` model file and place it in the `models/yolo/` directory.
+
+- **Manual Download**: 
+  - Download the YOLO model file (`yolo11.pt`) from the following link:
+    - [Download yolo11.pt model](https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11n.pt) 
+  - Move or copy the model file into the `models/yolo/` directory.
+  - for more informations you can see this url (https://docs.ultralytics.com/tasks/detect/#models)
