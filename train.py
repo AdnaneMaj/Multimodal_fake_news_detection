@@ -1,12 +1,16 @@
 import os
+from datetime import datetime
 import torch
-from torch_geometric.loader import DataLoader
-from torch.optim import Adam
-from sklearn.model_selection import train_test_split
-from tqdm.auto import tqdm
+import json
 import numpy as np
 import argparse
 import matplotlib.pyplot as plt
+
+from torch.optim import Adam
+from torch_geometric.loader import DataLoader
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import precision_recall_fscore_support
+from tqdm.auto import tqdm
 
 from src.utils import PHEMEDataset
 from src.models import KMGCN
@@ -15,30 +19,18 @@ def train_gcn(dataset,
               hidden_dim=64, 
               epochs=100, 
               lr=0.001, 
+              pool='max',
               batch_size=32, 
               test_split=0.2, 
               random_seed=42,
               early_stopping=10,
-              output_dir='./outputs'):
+              output_dir='./outputs',
+              per_checkpoint=False):
     """
-    Train the GCN for graph-level classification with improved tracking and logging
-    
-    Args:
-    dataset (PHEMEDataset): PHEME dataset
-    hidden_dim (int): Dimension of hidden layers
-    epochs (int): Number of training epochs
-    lr (float): Learning rate
-    batch_size (int): Batch size for training
-    test_split (float): Proportion of dataset to use for testing
-    random_seed (int): Random seed for reproducibility
-    early_stopping (int, optional): Number of epochs to wait for improvement
-    output_dir (str): Directory to save outputs
-    
-    Returns:
-    dict: Training results including model, best epoch, and metrics
+    Train the GCN with enhanced experiment tracking and unique folder creation
     """
-    # Create output directory if it doesn't exist
-    os.makedirs(output_dir, exist_ok=True)
+    # Create unique experiment folder
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     
     # Set random seed for reproducibility
     torch.manual_seed(random_seed)
@@ -67,13 +59,13 @@ def train_gcn(dataset,
     test_loader = DataLoader(test_dataset, batch_size=batch_size)
     
     # Initialize model
-    model = KMGCN(input_dim, hidden_dim, num_classes)
+    model = KMGCN(input_dim, hidden_dim, num_classes, pool)
     
     # Loss and optimizer
     criterion = torch.nn.CrossEntropyLoss()
     optimizer = Adam(model.parameters(), lr=lr, weight_decay=1e-4)
     
-    # Learning rate scheduler (optional)
+    # Learning rate scheduler
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
         optimizer, 
         mode='min', 
@@ -83,9 +75,8 @@ def train_gcn(dataset,
     )
     
     # Tracking metrics
-    train_losses = []
-    val_losses = []
-    accuracies = []
+    train_losses, val_losses, accuracies = [], [], []
+    precisions, recalls, f1_scores = [], [], []
     
     # Tracking best model
     best_accuracy = 0
@@ -118,6 +109,8 @@ def train_gcn(dataset,
         correct = 0
         total = 0
         total_val_loss = 0
+        all_preds = []
+        all_labels = []
         
         with torch.no_grad():
             for batch in test_loader:
@@ -128,55 +121,44 @@ def train_gcn(dataset,
                 pred = out.argmax(dim=1)
                 correct += (pred == batch.y.squeeze()).sum().item()
                 total += batch.y.size(0)
+                
+                all_preds.extend(pred.cpu().numpy())
+                all_labels.extend(batch.y.squeeze().cpu().numpy())
         
         # Calculate metrics
         train_loss = total_train_loss / len(train_loader)
         val_loss = total_val_loss / len(test_loader)
         accuracy = correct / total
         
+        # Calculate precision, recall, F1
+        precision, recall, f1, _ = precision_recall_fscore_support(
+            all_labels, all_preds, average='binary'
+        )
+        
         # Store metrics
         train_losses.append(train_loss)
         val_losses.append(val_loss)
         accuracies.append(accuracy)
+        precisions.append(precision)
+        recalls.append(recall)
+        f1_scores.append(f1)
         
         # Update learning rate scheduler
         scheduler.step(val_loss)
         
-        # Update epochs progress bar with metrics
+        # Update epochs progress bar
         epochs_progress.set_postfix({
             'Acc': f'{accuracy:.4f}', 
             'TLoss': f'{train_loss:.4f}', 
-            'VLoss': f'{val_loss:.4f}'
+            'VLoss': f'{val_loss:.4f}',
+            'F1': f'{f1:.4f}'
         })
         
         # Track best model
         if accuracy > best_accuracy:
             best_accuracy = accuracy
             best_epoch = epoch
-            
-            # Save best model checkpoint
-            best_model_path = os.path.join(output_dir, 'best_model.pth')
-            torch.save({
-                'epoch': epoch,
-                'model_state_dict': model.state_dict(),
-                'optimizer_state_dict': optimizer.state_dict(),
-                'loss': train_loss,
-                'accuracy': accuracy
-            }, best_model_path)
-            
-            # Also save the current best model in memory
             best_model = model.state_dict().copy()
-        
-        # Save periodic checkpoint
-        if epoch % 10 == 0:
-            checkpoint_path = os.path.join(output_dir, f'checkpoint_epoch_{epoch}.pth')
-            torch.save({
-                'epoch': epoch,
-                'model_state_dict': model.state_dict(),
-                'optimizer_state_dict': optimizer.state_dict(),
-                'loss': train_loss,
-                'accuracy': accuracy
-            }, checkpoint_path)
         
         # Early stopping
         if early_stopping and epoch - best_epoch > early_stopping:
@@ -186,38 +168,84 @@ def train_gcn(dataset,
     # Close progress bar
     epochs_progress.close()
     
-    # Plotting training metrics
-    plt.figure(figsize=(12, 4))
+    # Create unique experiment folder
+    exp_folder_name = f"{timestamp}_acc_{best_accuracy:.4f}"
+    exp_output_dir = os.path.join(output_dir, exp_folder_name)
+    os.makedirs(exp_output_dir, exist_ok=True)
     
-    # Training and Validation Loss
+    # Prepare experiment log
+    experiment_log = {
+        'configuration': {
+            'hidden_dim': hidden_dim,
+            'epochs': epochs,
+            'learning_rate': lr,
+            'pool_method': pool,
+            'batch_size': batch_size,
+            'test_split': test_split,
+            'random_seed': random_seed
+        },
+        'results': {
+            'best_accuracy': best_accuracy,
+            'best_epoch': best_epoch,
+            'final_precision': float(precision),
+            'final_recall': float(recall),
+            'final_f1_score': float(f1)
+        },
+        'training_curves': {
+            'train_losses': train_losses,
+            'val_losses': val_losses,
+            'accuracies': accuracies,
+            'precisions': precisions,
+            'recalls': recalls,
+            'f1_scores': f1_scores
+        }
+    }
+    
+    # Save experiment log as JSON
+    log_path = os.path.join(exp_output_dir, f'{exp_folder_name}_experiment_log.json')
+    with open(log_path, 'w') as f:
+        json.dump(experiment_log, f, indent=4)
+    
+    # Save best model
+    best_model_path = os.path.join(exp_output_dir, f'{exp_folder_name}_best_model.pth')
+    torch.save({
+        'epoch': best_epoch,
+        'model_state_dict': best_model,
+        'accuracy': best_accuracy
+    }, best_model_path)
+    
+    # Plotting (accuracy)
+    plt.figure(figsize=(15, 5))
+
+    # Accuracy subplot
     plt.subplot(1, 2, 1)
-    plt.plot(train_losses, label='Training Loss')
-    plt.plot(val_losses, label='Validation Loss')
-    plt.title('Training and Validation Loss')
-    plt.xlabel('Epoch')
-    plt.ylabel('Loss')
-    plt.legend()
-    
-    # Accuracy
-    plt.subplot(1, 2, 2)
     plt.plot(accuracies, label='Accuracy')
     plt.title('Model Accuracy')
     plt.xlabel('Epoch')
     plt.ylabel('Accuracy')
     plt.legend()
-    
-    # Save the plot
+
+    # Train vs Val Loss subplot
+    plt.subplot(1, 2, 2)
+    plt.plot(train_losses, label='Train Loss')
+    plt.plot(val_losses, label='Validation Loss')
+    plt.title('Training & Validation Loss')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.legend()
+
     plt.tight_layout()
-    plt.savefig(os.path.join(output_dir, 'training_metrics.png'))
+    plot_path = os.path.join(exp_output_dir, f'{exp_folder_name}_training_metrics.png')
+    plt.savefig(plot_path)
     plt.close()
-    
-    # Restore best model
-    model.load_state_dict(best_model)
     
     return {
         'model': model,
         'best_epoch': best_epoch,
         'best_accuracy': best_accuracy,
+        'precision': precision,
+        'recall': recall,
+        'f1_score': f1,
         'train_losses': train_losses,
         'val_losses': val_losses,
         'accuracies': accuracies
@@ -234,9 +262,11 @@ def main():
                         help='Number of training epochs')
     parser.add_argument('--lr', type=float, default=0.001, 
                         help='Learning rate for optimization')
+    parser.add_argument('--pool', type=str, default='max', 
+                        help='Either use max or average pooling')
     parser.add_argument('--batch_size', type=int, default=64, 
                         help='Batch size for training')
-    parser.add_argument('--test_split', type=float, default=0.2, 
+    parser.add_argument('--test_split', type=float, default=0.4, 
                         help='Proportion of dataset to use for testing')
     parser.add_argument('--random_seed', type=int, default=42, 
                         help='Random seed for reproducibility')
@@ -244,6 +274,8 @@ def main():
                         help='Number of epochs with no improvement after which training will be stopped')
     parser.add_argument('--output_dir', type=str, default='./outputs', 
                         help='Directory to save output files')
+    parser.add_argument('--per_checkpoint', action='store_true', 
+                        help='Save model checkpoint every 10 epochs')
 
     # Parse the arguments
     args = parser.parse_args()
@@ -255,7 +287,7 @@ def main():
 
     # Create the dataset
     print("\nCreating PHEME dataset ...")
-    pheme_dataset = PHEMEDataset()
+    pheme_dataset = PHEMEDataset(test=False, embedding="bert")
     
     # Training
     print("\nStarting training ...")
@@ -267,6 +299,9 @@ def main():
     # Print final results
     print("\nTraining Complete!")
     print(f"Best Accuracy: {train_results['best_accuracy']:.4f}")
+    print(f"Precision: {train_results['precision']:.4f}")
+    print(f"Recall: {train_results['recall']:.4f}")
+    print(f"F1 Score: {train_results['f1_score']:.4f}")
     print(f"Best Epoch: {train_results['best_epoch']}")
 
 if __name__ == '__main__':
