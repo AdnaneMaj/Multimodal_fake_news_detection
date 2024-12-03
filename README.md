@@ -51,8 +51,6 @@ Place the dataset folder after extraction inside [data/raw/](data/raw/) director
 
 - Use a Graph data base to store the data : https://chatgpt.com/share/674c25eb-6df4-800d-89d4-fa5c3c3cb495
 
-# YOLO Object Detection Project
-
 ## Setting Up the YOLO Model
 
 ### ImageAnalyzer Class with YOLO Model Integration
