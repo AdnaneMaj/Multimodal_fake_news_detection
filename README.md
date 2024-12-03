@@ -1,5 +1,8 @@
 # Multimodal_fake_news_detection
 
+## First results
+![alt text](outputs/20241203_141534_acc_0.8352/20241203_141534_acc_0.8352_training_metrics.png)
+
 ## Setup installation
 
 Create the conda environment :

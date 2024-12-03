@@ -7,6 +7,7 @@ import torch
 from torch_geometric.utils import from_networkx
 from torch_geometric.data import Data
 from tqdm import tqdm
+import numpy as np
 
 from .data_utils import DatasetCreator
 from ..Enums import BaseEnum
@@ -50,7 +51,7 @@ class GraphConstructor:
         else:
             from gensim.models import KeyedVectors
             model = KeyedVectors.load_word2vec_format(BaseEnum.WORD2VEC_MODEL.value, binary=True)
-            embedde = lambda word: model[word]
+            embedde = lambda word: model[word] if word in model.key_to_index else np.zeros(model.vector_size)
 
         return embedde
 
