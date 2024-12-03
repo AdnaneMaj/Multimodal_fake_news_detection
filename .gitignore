@@ -167,3 +167,4 @@ data/processed/data_exemple.csv
 *.bin
 *.pt
 outputs/**
+main.ipynb
