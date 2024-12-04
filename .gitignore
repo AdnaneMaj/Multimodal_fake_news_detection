@@ -168,3 +168,4 @@ data/processed/data_exemple.csv
 *.pt
 outputs/**
 main.ipynb
+test
