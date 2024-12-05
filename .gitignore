@@ -163,7 +163,6 @@ cython_debug/
 
 data/raw/PHEME/
 data/processed/data.csv
-data/processed/data_exemple.csv
 *.bin
 *.pt
 outputs/**
