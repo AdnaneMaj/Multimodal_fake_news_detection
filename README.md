@@ -27,6 +27,8 @@ Donwload the **PHEME** dataset : [PHEME dataset for Rumour Detection and Veracit
 
 Place the dataset folder after extraction inside [data/raw/](data/raw/) directory with the name **PHEME**
 
+> You can use a processed version of data from : [processed drive](https://drive.google.com/drive/folders/19KOAZhz6i5TOTwZVYuAz69WA4iTZ-fzO?usp=sharing) just downlaod the file, extract it and copy it's content to [data/processed](data/processed)
+
 
 ### 2. Donwload Google's Word2Vec pretrained model
 Donwload the model : [GoogleNews-vectors](https://huggingface.co/NathaNn1111/word2vec-google-news-negative-300-bin/blob/main/GoogleNews-vectors-negative300.bin)
