@@ -168,4 +168,3 @@ data/processed/*.csv
 outputs/**
 main.ipynb
 test
-.gitkeep
