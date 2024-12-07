@@ -162,9 +162,10 @@ cython_debug/
 #.idea/
 
 data/raw/PHEME/
-data/processed/data.csv
+data/processed/*.csv
 *.bin
 *.pt
 outputs/**
 main.ipynb
 test
+.gitkeep

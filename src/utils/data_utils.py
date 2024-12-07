@@ -2,11 +2,13 @@ import os
 import json
 import csv
 import pandas as pd
+from tqdm import tqdm
 from typing import Union, List
 from ..Enums import BaseEnum
+from ..models.yolo import ObjectExtractor
 
 class DatasetCreator:
-    def __init__(self, data_dir:str=BaseEnum.DATA_PATH.value,test:bool=True):
+    def __init__(self, data_dir:str=BaseEnum.DATA_PATH.value,multimodality:bool=False):
         """
         Initialize the DatasetCreator.
 
@@ -14,17 +16,39 @@ class DatasetCreator:
             parent_dir (str): Path to the parent directory containing all subjects.
             output_csv_path (str): Path to save the output CSV file.
         """
+        self.data_dir = data_dir
+        self.multimodality = multimodality
+
         self.parent_dir = os.path.join(data_dir,'raw/PHEME/all-rnr-annotated-threads')
-        self.output_csv_path = os.path.join(data_dir,'processed/data_exemple.csv') if test else os.path.join(data_dir,'processed/data.csv')
+        self.output_csv_path = self.set_output_csv()
         self.class_labels = {"rumours": 0, "non-rumours": 1}
         self.dataset = []
         self.df = None
+
+        if multimodality:
+            self.obj_ext = ObjectExtractor()
         
         #Try to get the dataframe if it's already exist
         if not os.path.exists(self.output_csv_path):
             self.process_directories()
             self.save_to_csv()
         self.df = self.get_dataframe()
+
+    def set_output_csv(self):
+        """
+        Set the name of csv file
+        """
+        # Start with the base file name
+        file_name = "data"
+
+        # Append parts to the file name based on the boolean values
+        if self.multimodality:
+            file_name += "_multi"
+
+        # Add the file extension
+        file_name += ".csv"
+
+        return os.path.join(self.data_dir,'processed',file_name)
 
 
     def process_directories(self):
@@ -34,7 +58,6 @@ class DatasetCreator:
         subjects = [os.path.join(self.parent_dir, d) for d in os.listdir(self.parent_dir) if os.path.isdir(os.path.join(self.parent_dir, d))]
         for subject_path in subjects:
             subject_name = os.path.basename(subject_path)
-            print(f"Processing subject: {subject_name}")
             for category, label in self.class_labels.items():
                 category_path = os.path.join(subject_path, category)
                 if not os.path.exists(category_path):
@@ -52,7 +75,7 @@ class DatasetCreator:
             label (int): Class label for the category.
             subject (str): Name of the subject (folder name).
         """
-        for root, dirs, files in os.walk(category_path):
+        for root, dirs, files in tqdm(os.walk(category_path),desc=f'Downloading subject : {subject}'):
             if os.path.basename(root) == "source-tweets":
                 id_post = os.path.basename(os.path.dirname(root))  # Extract ID from parent directory name
                 for file in files:
@@ -83,6 +106,10 @@ class DatasetCreator:
             media.get("media_url", "") for media in data.get("entities", {}).get("media", [])
         ]
         media_urls = ";".join(media_urls)  # Combine multiple URLs into a single string
+
+        #Add detected object as words that occured in the text
+        if self.multimodality:
+            text += ' '+self.obj_ext.process_single_image(media_url=media_urls)
 
         # Append to dataset
         self.dataset.append([id_post, label, subject, text, media_urls])
