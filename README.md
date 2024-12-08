@@ -34,7 +34,7 @@ Place the dataset folder after extraction inside [data/raw/](data/raw/) director
 | Version | Description                                | Download Link                                                                                          |
 |---------|--------------------------------------------|-------------------------------------------------------------------------------------------------------|
 | 0       | No multimodality,only bert or w2v        | [Drive Link](https://drive.google.com/drive/folders/19KOAZhz6i5TOTwZVYuAz69WA4iTZ-fzO?usp=sharing)    |
-| 1       | Added multimodality <br> The 4 combos of : <br> - w2v<br> - w2v-multi<br> - bert<br> - bert-multi *(Not added yet)*    | [Drive Link](https://drive.google.com/drive/folders/new-link-for-v1-1?usp=sharing)                   |
+| 1       | Added multimodality <br> The 4 combos of : <br> - w2v<br> - w2v-multi<br> - bert<br> - bert-multi *(Not added yet)*    | [Drive Link](https://drive.google.com/drive/folders/1aE52PN0Mf_2IeOId8Az7Rm8ZAeypy8US?usp=sharing)                   |
 
 
 ### 2. Donwload Google's Word2Vec pretrained model
