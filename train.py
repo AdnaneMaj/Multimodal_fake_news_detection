@@ -5,6 +5,7 @@ import json
 import numpy as np
 import argparse
 import matplotlib.pyplot as plt
+import inspect
 
 from torch.optim import Adam
 from torch_geometric.loader import DataLoader
@@ -13,7 +14,7 @@ from sklearn.metrics import precision_recall_fscore_support
 from tqdm.auto import tqdm
 
 from src.utils import PHEMEDataset
-from src.models import KMGCN
+from src.models.gcn import KMGCN
 
 def train_gcn(dataset, 
               hidden_dim=64, 
@@ -24,8 +25,7 @@ def train_gcn(dataset,
               test_split=0.2, 
               random_seed=42,
               early_stopping=10,
-              output_dir='./outputs',
-              per_checkpoint=False):
+              output_dir='./outputs'):
     """
     Train the GCN with enhanced experiment tracking and unique folder creation
     """
@@ -274,8 +274,10 @@ def main():
                         help='Number of epochs with no improvement after which training will be stopped')
     parser.add_argument('--output_dir', type=str, default='./outputs', 
                         help='Directory to save output files')
-    parser.add_argument('--per_checkpoint', action='store_true', 
-                        help='Save model checkpoint every 10 epochs')
+    parser.add_argument('--embedding',type=str,default='bert',
+                        help='The word embedding to use : either bert or w2v')
+    parser.add_argument('--multimodality',type=bool, default=True,
+                        help='Either to use multimodality or not')
 
     # Parse the arguments
     args = parser.parse_args()
@@ -285,15 +287,19 @@ def main():
     for arg in vars(args):
         print(f"{arg}: {getattr(args, arg)}")
 
+    #Get parameters of each function
+    train_specific_args = {k: v for k, v in vars(args).items() if k in list(inspect.signature(train_gcn).parameters)}
+    PHEMEDataset_args = {k: v for k, v in vars(args).items() if k in list(inspect.signature(PHEMEDataset).parameters)}
+
     # Create the dataset
     print("\nCreating PHEME dataset ...")
-    pheme_dataset = PHEMEDataset(test=False, embedding="bert")
+    pheme_dataset = PHEMEDataset(**PHEMEDataset_args)
     
     # Training
     print("\nStarting training ...")
     train_results = train_gcn(
         dataset=pheme_dataset,
-        **vars(args)
+        **train_specific_args
     )
 
     # Print final results
