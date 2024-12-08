@@ -5,18 +5,19 @@ from torch.utils.data import Dataset,DataLoader
 from torch_geometric.data import Dataset, Data
 
 from .graph_utils import GraphConstructor
+from ..Enums import BaseEnum
 
 class PHEMEDataset(Dataset):
     def __init__(
         self,
-        root: str="data",
+        root: str = BaseEnum.DATA_PATH.value,
         transform: Optional[Callable] = None,
         pre_transform: Optional[Callable] = None,
         pre_filter: Optional[Callable] = None,
         window_size: int = 20,
         padding: bool = True,
         embedding: int = 'bert',
-        test:bool=True
+        multimodality: bool = True
     ):
         """
         Initialize the PHEME dataset.
@@ -27,10 +28,26 @@ class PHEMEDataset(Dataset):
             pre_transform (callable, optional): A function/transform to be applied before saving
             pre_filter (callable, optional): A function that takes in a Data object and returns True if the object should be included
         """
-        self.graph_constructor = GraphConstructor(window_size=window_size,padding=padding,embedding=embedding,test=test)
+        self.graph_constructor = GraphConstructor(window_size=window_size,padding=padding,embedding=embedding,multimodality=multimodality)
         self.data_list = None
         self.embedding = embedding
         super().__init__(root, transform, pre_transform, pre_filter)
+
+    def set_output_file_name(self):
+        """
+        Set the name of the .pt file
+        """
+        # Start with the base file name with the embedding type
+        file_name = "graphs"+"_"+self.embedding
+
+        # Append other part
+        if self.graph_constructor.multimodality:
+            file_name += "_multi"
+
+        # Add the file extension
+        file_name += ".pt"
+
+        return file_name
 
     @property
     def raw_file_names(self):
@@ -38,7 +55,7 @@ class PHEMEDataset(Dataset):
 
     @property
     def processed_file_names(self):
-        output_file = 'graphs.pt' if self.embedding == 'bert' else 'graphs_w2v.pt'
+        output_file = self.set_output_file_name()
         return [output_file]
 
     def download(self):

@@ -19,7 +19,7 @@ ___TO-DO___
 """
 
 class GraphConstructor:
-    def __init__(self, window_size:int=5,padding:bool=True,embedding:str='bert',test:bool=True):
+    def __init__(self, window_size:int=20,padding:bool=True,embedding:str='bert',multimodality:bool=True):
         """
         Initialize PMI Graph Constructor
         
@@ -32,12 +32,13 @@ class GraphConstructor:
         self.corpus_words:List[str] = []
         self.padding = padding
         self.embedding = embedding
+        self.multimodality = multimodality
 
         #Load the embedding model and set the embedding function
         self.embedde = self.create_embedde_func()
 
         #Create a DatasetCreator
-        self.data = DatasetCreator(test=test)
+        self.data = DatasetCreator(multimodality=multimodality)
 
     def create_embedde_func(self):
         """
