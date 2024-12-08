@@ -27,7 +27,14 @@ Donwload the **PHEME** dataset : [PHEME dataset for Rumour Detection and Veracit
 
 Place the dataset folder after extraction inside [data/raw/](data/raw/) directory with the name **PHEME**
 
-> You can use a processed version of data from : [processed drive](https://drive.google.com/drive/folders/19KOAZhz6i5TOTwZVYuAz69WA4iTZ-fzO?usp=sharing) just downlaod the file, extract it and copy it's content to [data/processed](data/processed)
+> You can use a processed version of data from the table below,downlaod the file, extract it and copy it's content to [data/processed](data/processed)
+
+**Processed Data Versions**
+
+| Version | Description                                | Download Link                                                                                          |
+|---------|--------------------------------------------|-------------------------------------------------------------------------------------------------------|
+| 0       | No multimodality,only bert or w2v        | [Drive Link](https://drive.google.com/drive/folders/19KOAZhz6i5TOTwZVYuAz69WA4iTZ-fzO?usp=sharing)    |
+| 1       | Added multimodality <br> The 4 combos of : <br> - w2v<br> - w2v-multi<br> - bert<br> - bert-multi *(Not added yet)*    | [Drive Link](https://drive.google.com/drive/folders/new-link-for-v1-1?usp=sharing)                   |
 
 
 ### 2. Donwload Google's Word2Vec pretrained model
@@ -43,7 +50,7 @@ Place the `.bin` after extraction inside [src/models](src/models) directory with
     - [x] Graph constructure (textual first)
     - [x] Word extractor from image using YOLO
     - [ ] Knowledge distilator ( using knowledge graph )
-- [ ] First tests
+- [x] First tests
 
 ## Ideas/Version
 
