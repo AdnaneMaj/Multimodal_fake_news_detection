@@ -13,7 +13,7 @@ from sklearn.metrics import precision_recall_fscore_support
 from tqdm.auto import tqdm
 
 from src.utils import PHEMEDataset
-from src.models import KMGCN
+from src.models import KMGCN , GraphSage
 
 def train_gcn(dataset, 
               hidden_dim=64, 
@@ -59,7 +59,7 @@ def train_gcn(dataset,
     test_loader = DataLoader(test_dataset, batch_size=batch_size)
     
     # Initialize model
-    model = KMGCN(input_dim, hidden_dim, num_classes, pool)
+    model = GraphSage(input_dim, hidden_dim, num_classes, pool)
     
     # Loss and optimizer
     criterion = torch.nn.CrossEntropyLoss()
@@ -256,7 +256,7 @@ def main():
     parser = argparse.ArgumentParser(description="Train Graph Convolutional Network")
 
     # Add attributes with more descriptive help text
-    parser.add_argument('--hidden_dim', type=int, default=64, 
+    parser.add_argument('--hidden_dim', type=int, default=256, 
                         help='Number of hidden units in the GCN')
     parser.add_argument('--epochs', type=int, default=100, 
                         help='Number of training epochs')
