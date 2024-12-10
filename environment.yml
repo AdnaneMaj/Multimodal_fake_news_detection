@@ -16,3 +16,7 @@ dependencies:
   - python-magic
   - ultralytics
   - opencv
+  - nltk
+  - pip
+  - pip:
+    - contractions
