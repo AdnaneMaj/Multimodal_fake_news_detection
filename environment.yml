@@ -16,3 +16,6 @@ dependencies:
   - python-magic
   - ultralytics
   - opencv
+  - SPARQLWrapper 
+  - spacy
+  - neuralcoref
